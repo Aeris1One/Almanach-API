@@ -11,4 +11,4 @@ COPY ./app /backend/app
 COPY ./celery_worker_prestart.py /backend/celery_worker_prestart.py
 COPY ./celery_start.sh /backend/celery_start.sh
 
-CMD ["/backend/celery_start.sh", "worker"]
+CMD ["/backend/celery_start.sh", "beat"]

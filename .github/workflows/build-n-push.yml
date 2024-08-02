@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [ "web", "worker", "beat" ]
     steps:
       - uses: actions/checkout@v4
       - name: Prepare tag name
@@ -25,10 +28,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ${{ matrix.image }}.Dockerfile
           platforms: linux/amd64
           push: true
           cache-to: type=gha,mode=max
           cache-from: type=gha
           tags: |
-            ghcr.io/${{ steps.tag_name.outputs.repository_lowercase }}:latest
-            ghcr.io/${{ steps.tag_name.outputs.repository_lowercase }}:${{ github.sha }}
+            ghcr.io/${{ steps.tag_name.outputs.repository_lowercase }}:latest-${{ matrix.image }}
+            ghcr.io/${{ steps.tag_name.outputs.repository_lowercase }}:${{ github.sha }}-${{ matrix.image }}

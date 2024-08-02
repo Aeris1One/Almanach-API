@@ -7,3 +7,4 @@ SQLAlchemy~=2.0.31
 psycopg2-binary
 tenacity~=9.0.0
 redis
+flower
