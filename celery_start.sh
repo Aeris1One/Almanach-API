@@ -2,4 +2,4 @@
 
 python celery_worker_prestart.py
 
-celery -A app.worker worker -l info -Q almanach -c 1
+celery -A app.tasks worker -l info -Q almanach -c 1 -B
