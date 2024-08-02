@@ -1,8 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, Annotated, Union
 
-from pydantic import AnyHttpUrl, PostgresDsn, EmailStr, field_validator
+from pydantic import AnyHttpUrl, PostgresDsn, AmqpDsn, EmailStr, RedisDsn, field_validator, UrlConstraints
+from pydantic_core import Url
 from pydantic_settings import BaseSettings
 
+# SQLAlchemy doesn't support other schemes than postgresql://
+StrictPostgresDsn = Annotated[PostgresDsn, UrlConstraints(allowed_schemes=['postgresql'])]
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
@@ -24,8 +27,10 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
     # Database
-    # Optional for now, but will be required in the future
-    POSTGRES_DSN: Optional[PostgresDsn] = None
+    POSTGRES_DSN: StrictPostgresDsn
+
+    # Message Broker
+    BROKER_DSN: Union[AmqpDsn, RedisDsn]
 
     # Contact
     CONTACT_EMAIL: Optional[EmailStr] = None

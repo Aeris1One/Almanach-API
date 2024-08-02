@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_db
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    expose:
+      - "5672"
+    ports:
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  app:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    environment:
+      POSTGRES_DSN: postgresql://user:password@postgres:5432/app_db
+      RABBITMQ_DSN: amqp://user:password@rabbitmq:5672/
+    ports:
+      - "8080:8000"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker.Dockerfile
+    environment:
+      POSTGRES_DSN: postgresql://user:password@postgres:5432/app_db
+      RABBITMQ_DSN: amqp://user:password@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - rabbitmq
+
+volumes:
+  postgres_data:
+  rabbitmq_data:

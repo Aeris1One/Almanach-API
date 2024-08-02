@@ -8,8 +8,7 @@ RUN pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir -r /backend/requirements.txt
 
 COPY ./app /backend/app
+COPY ./celery_worker_prestart.py /backend/celery_worker_prestart.py
+COPY ./celery_start.sh /backend/celery_start.sh
 
-EXPOSE 80
-
-HEALTHCHECK --interval=5s --timeout=5s --retries=3 CMD curl --fail http://localhost:80/health || exit 1
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["/backend/celery_start.sh"]
