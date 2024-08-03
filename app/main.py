@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
+from app.core.db import init_db
 
 app = FastAPI(
     title="Almanach API",
@@ -14,6 +15,10 @@ app = FastAPI(
         "email": settings.CONTACT_EMAIL
     }
 )
+
+@app.on_event("startup")
+async def startup():
+    init_db()
 
 # CORS
 origins = [origin.scheme + "://" + origin.host + ":" + str(origin.port) for origin in settings.BACKEND_CORS_ORIGINS]

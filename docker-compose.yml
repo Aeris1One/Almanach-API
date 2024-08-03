@@ -48,6 +48,17 @@ services:
       - postgres
       - rabbitmq
 
+  beat:
+    build:
+      context: .
+      dockerfile: beat.Dockerfile
+    environment:
+      POSTGRES_DSN: postgresql://user:password@postgres:5432/app_db
+      RABBITMQ_DSN: amqp://user:password@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - rabbitmq
+
 volumes:
   postgres_data:
   rabbitmq_data:
