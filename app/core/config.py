@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Message Broker
     BROKER_DSN: Union[AmqpDsn, RedisDsn]
 
+    # API Key
+    ADMIN_API_KEY: str
+
     # Contact
     CONTACT_EMAIL: Optional[EmailStr] = None
     CONTACT_NAME: Optional[str] = None

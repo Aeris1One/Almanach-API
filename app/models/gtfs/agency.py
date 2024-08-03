@@ -1,7 +1,8 @@
 from typing import Optional
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
 
-from app.models.internal import AlmanachModel
+from app.models.app.gtfs import AlmanachModel
+
 
 class Agency(AlmanachModel, table=True):
     agency_id: Optional[str] = Field(default=None)
