@@ -1,5 +1,6 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, desc
 import requests
+from celery.app.control import Inspect
 
 from app.core.celery_app import celery_app
 from app.core.config import settings
@@ -34,15 +35,24 @@ def scheduler():
             return 'No datasets available on transport.data.gouv.fr, weird.'
 
         for feed in feeds:
+            # If there is already a scheduled update for this feed, skip it
+            feed_update = session.exec(select(FeedUpdate).where(FeedUpdate.feed_id == feed.id).where(FeedUpdate.state == 'scheduled')).first()
+            if feed_update is not None:
+                print(f"Feed {feed.id} already has an update scheduled, skipping.")
+                continue
+
             dataset = next((dataset for dataset in datasets if dataset['slug'] == feed.slug), None)
             if dataset is None:
                 # TODO: Send a warning if this happens
                 continue
             dataset_last_modified = datetime.fromisoformat(dataset['updated'])
-            feed_last_update = session.exec(select(FeedUpdate).where(FeedUpdate.feed_id == feed.id).order_by(FeedUpdate.date)).first()
-            # Database doesn't store timezone info, but we're always using UTC
-            feed_last_update = feed_last_update.date.replace(tzinfo=UTC) if feed_last_update is not None else None
-            if feed_last_update is None or feed_last_update < dataset_last_modified:
-                updater.delay(feed.id)
+
+            feed_update = session.exec(select(FeedUpdate).where(FeedUpdate.feed_id == feed.id).where(FeedUpdate.state == 'done').order_by(desc(FeedUpdate.date)).limit(1)).first()
+            print(f"Feed {feed.id} last updated on {feed_update.date if feed_update is not None else 'never'}, dataset last modified on {dataset_last_modified}")
+            if feed_update is None or feed_update.date.replace(tzinfo=UTC) < dataset_last_modified:
+                update_time = datetime.now()
+                updater.delay(feed.id, update_time)
+                session.add(FeedUpdate(feed_id=feed.id, date=update_time, state='scheduled'))
+                session.commit()
     return 'Scheduler done'
 

@@ -14,5 +14,5 @@ class Feed(FeedCreate, table=True):
 
 class FeedUpdate(SQLModel, table=True):
     feed_id: int = Field(foreign_key="feed.id", primary_key=True)
-    # store UTC time
     date: datetime = Field(default=datetime.now(UTC), primary_key=True)
+    state: str = Field(default="scheduled")
